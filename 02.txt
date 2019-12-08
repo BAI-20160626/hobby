@@ -1,0 +1,215 @@
+1. 创建和删除分支(了解即可)
+   创建分支命令：git branch 分支名
+   查看所有分支命令：git branch
+   切换分支命令：git checkout 分支名
+   合并分支到master分支上命令：
+   首先切换到master分支，git checkout master，然后git merge 分支名。即将创建的分支合并到master上。
+   删除分支命令：git branch -d 分支名
+
+2. Git Gui
+   GIT官方网站为了解决部分用户通过命令行对git工具使用时的怨声载道的现象，因此推出了一个GIT的可视化工具Git Gui
+
+   注1：汉化，见资料/git中文汉化包.zip
+   注2：GitGui教程“https://www.runoob.com/w3cnote/git-gui-window.html” 
+   注3：GitGui建议与ssh key一起使用更加方便
+   注4：类似的Git的图形化界面工具还有很多，例如：windows上的小乌龟（TortoiseGit），Mac则上SourceTre  
+
+3. 什么是ssh key
+   我理解的就是每台电脑上会产生出一个ssh key，然后自己有一个远程账户，但是自己有可能有很多台电脑，
+   包括家里的电脑还有公司的电脑，我们可以在任意一台电脑上工作，但是如果想要每台电脑都和远程版本库时刻保持着通讯，
+   就需要将每台电脑的ssh key添加到远程账户，添加到远程版本库之后，远程版本库就会和已经添加的电脑进行通讯而不会和其他电脑进行通讯
+   
+   建议：所有的Git操作都通过ssh key进行，因为简章
+
+4. git/github生成密钥并通过
+   操作分为本地电脑配置和github网站配置
+
+   第一步：本地电脑配置
+   右键空白处，选择Git Bash Here打开相关命令窗口   
+   1.配置用户名和邮箱（如果已经配置，就跳过）
+     git config --global user.name "username"
+     git config --global user.email "email"
+     之后就会在C:\Users\Administrator下创建一个.gitconfig文件，内容为
+     [user]
+     name = xxx
+     email = xxx@xxx.com
+     
+     注1：username和email即github的登陆帐号和注册邮箱
+     注2：git config命令的–global参数，用了这个参数，表示你这台机器上所有的Git仓库都会使用这个配置
+
+   2.检查下自己之前有没有已经生成ssh
+     cd ~/.ssh
+     ls
+
+     注1：当cd ~/.ssh命令执行后窗口返回“no such file or directory”的时候，表示我们的电脑并没有ssh key，所以需要我们创建ssh key
+     注2：~表示当前用户的目录，比如我的是：C:\Users\Administrator
+     注3：ls命令执行后，如果本地有ssh秘钥的话会有id_rsa.pub，config，known_hosts等文件
+
+   3.生成(或删除)秘钥
+     ssh-keygen -t rsa -C "xxx@xx.com"//这里的邮箱要换成自己注册时的邮箱
+     接着按3个回车即可。
+  
+     注1：如果本地有ssh，执行以上命令会出现正面的提示，这里选择y，表示覆盖本地的ssh key，其实也就是ssh秘钥删除的意思
+     注2：为什么要删除秘钥，创建SSH的时候设置过密码，那就很有可能git操作时出现忘记密码的尴尬情况，
+          不要想着怎么重新修改密码了，选择重新创建一个ssh秘钥  
+     注3：创建ssh key不要输入密码了，不然操作起来太累~~~~~~~ 
+ 
+   4.执行命令完成后,默认会在window的C:\Users\Administrator\.ssh下面生成如下两个名称的文件: 
+     C:\Users\Administrator\.ssh
+       id_rsa(私钥，不能泄露出去)
+       id_rsa.pub(公钥)
+       known_hosts(不用管) 
+
+   第二步：远程github仓库配置
+   1.登陆到自己的gitbub,点击右上角的倒立小三角形。选择 settings
+   2.选择SSH and GPG keys
+   3.点击右边的New SSH key
+   4.随意填入一个title，然后 key 中粘贴刚才复制的id_rsa.pub文本，点击 Add key 这样就大功告成
+   5.github官网有时候会要你输入登陆密码才能添加ssh key。输入密码即可
+
+   ## 第三步为可省略步骤，如果你在取得Git仓库时就使用的是ssh协议，就无需修改
+   第三步：修改你本地的ssh remote url. 不用https协议，改用git 协议
+   1.git remote -v 查看你当前的remote url
+     git remote -v
+     
+     ## 如何显示如下内容，则表示Git仓库是使用https协议进行访问的。
+     origin https://github.com/someaccount/someproject.git (fetch)
+     origin https://github.com/someaccount/someproject.git (push)
+
+   2.使用浏览器登陆github，找到仓库ssh协议相应的url。类似如下：
+     git@github.com:someaccount/someproject.git
+
+   3.使用 git remote set-url 来调整你的url。
+     git remote set-url origin git@github.com:someaccount/someproject.git
+
+   4.最后再用 git remote -v 查看一下。协议已改变
+
+   ## 
+   第四步：测试SSH连接
+   1.输入测试命令
+     ssh -T git@github.com
+     如果显示如下内容，表示ssh key添加成功：
+     Hi xxx! You've successfully authenticated, but GitHub does not provide shell access.
+
+
+   小结：https 和 SSH 的区别：
+         1.前者可以随意克隆github上的项目，而不管是谁的；而后者则是你必须是你要克隆的项目的拥有者或管理员，
+           且需要先添加 SSH key ，否则无法克隆。
+         2.https url 在push的时候是需要验证用户名和密码的；而 SSH 在push的时候，是不需要输入用户名的，
+           如果配置SSH key的时候设置了密码，则需要输入密码的，否则直接是不需要输入密码的。
+
+
+5. idea中配置Git(两种方式)
+   1.设置git.exe的安装路径
+     点击菜单“File->Settings->Version Control->Git”，设置Path to Git executable的值为：D:\tools\Git\bin\git.exe,
+
+     注1：请将上述路径“D:\tools\Git\bin\git.exe”改为自己git的安装目录
+     注2：点击右边的“test”按钮，应该显示成功消息及git的版本信息
+
+   2.再将本窗口的SSH executable设置为Native，如果选择Built-in，则需要输入密码
+
+   3.选择 VCS -> Checkout from Version Control -> Git，将gitlab上面项目的ssh路径复制，点击Test，提示Connection successful，后面一路点击next即可
+
+   注1：很郁闷，在idea未找到如何使用ssh key来push项目，只能通过帐号密码进行push   
+
+   方式二：在idea中配置帐号密码登陆
+   1.同方式一的步骤1
+   2.设置Github帐号
+     点击菜单“Settings->Version Control->Github” 
+
+     注1：认证方式选择密码，即Auth Type：“Password”，然后输入帐号/密码，再测试是否连接成功
+     注2：认证方式选择令牌，即“Token”，再点击“Create API Token”，再输入帐号和密码，通过后会生成一个令牌
+
+
+5. idea中配置Git
+   1.设置git.exe的安装路径
+     点击菜单“File->Settings->Version Control->Git”，设置Path to Git executable的值为：D:\tools\Git\bin\git.exe,
+
+     注1：请将上述路径“D:\tools\Git\bin\git.exe”改为自己git的安装目录
+     注2：点击右边的“test”按钮，应该显示成功消息及git的版本信息
+
+   2.设置Github帐号
+     点击菜单“Settings->Version Control->Github” 
+
+     注1：认证方式选择密码，即Auth Type：“Password”，然后输入帐号/密码，再测试是否连接成功
+     注2：认证方式选择令牌，即“Token”，再点击“Create API Token”，再输入帐号和密码，通过后会生成一个令牌
+
+
+   3.有意思的两个地方：
+     1.idea创建项目后，第一次push项目到github只能通过设置帐号/密码的方式，再次从github远程仓库clone下来就可以使用ssh key了
+     2.如果IDEA上的git功能出现了可以commit但无法push和pull的问题，测试发现原因是Could not read from remote repository，
+       解决方法：在Settings->Version Control->Git中，将SSH executable设置为Native即可
+
+6. Git文件的四种状态(复习)
+   未跟踪(untrack)：红色
+   已修改(modified)：蓝色
+   已暂存(staged)：绿色
+   已提交(committed)：白色
+
+
+## 场景：在idea中新建一个项目，并push到github，这种情况一般是项目初建，项目经理将项目搭建好，第一次提交到github
+7. idea中使用Git
+  0.  VCS是什么
+      VCS(Check out from Version Control)从版本控制中检查项目
+
+  1.创建本地仓库
+    VCS-->Import into Version Control-->Create Git Repository...
+    注1：一般会选择当前项目所在的目录  
+
+  2.上传项目到本地仓库，项目右键选择Git-->add，此时项目文件变成绿色，此时文件只是处于暂存区，并没有真正进入到版本库(本地)中
+
+  3.项目右键Git--> Commit Directory，在弹窗中输入Commit Message，点击commit，此时项目文件从暂存区真正进入版本库(本地)中，项目文件变成白色
+    注1：在弹窗中输入Commit Message，也可以点击commit and push，会同时提交到本地库和代码托管网站
+
+  4.上传项目到GitHub中，VCS-->Import into Version Control-->Share Project on GitHub，在弹框中输入仓库名和描述，点击Share，即可是上传，
+     
+   中间会弹窗输入GitHub的用户名和密码（已输入过用户名和密码并记住的不会再次弹框输入），上传成功后IDEA右下角会给出提示
+
+
+  6. 提交修改文件到GitHub
+
+　　  新增文件（红色），右键-->Git-->add，将新增的文件加入本地仓库，此时文件变绿色
+
+　　  修改文件（蓝色）
+
+　　  在项目右键-->Git-->Commit Directory，查看有变动的文件并输入Commit Message，点击Commit and Push...
+
+　　  提交后会进行语法检查，若存在错误或警告会给出确认提示，点击Commit，弹出Push框，点击Push，上传GitHub成功
+
+
+  7. Clone 克隆 GitHub 上的代码到本地
+      在 GitHub 上创建仓库后，复制仓库地址，比如 https://github.com/FatliTalk/test ，
+      在 IntelliJ IDEA 中 VCS—>Checkout from Version Control—>Git（或GitHub）中，粘贴仓库url地址（选择仓库），
+      从 GitHub 仓库中 Clone 克隆一份项目，然后就可以在本地进行修改，然后再 Push 到 GitHub
+
+
+
+8. 利用GitHub进行团队开发
+   注1：详情见“资料/02 利用GitHub进行团队开发.mth”
+
+
+
+
+
+
+
+附录一：window命令窗口常用命令
+1.打开命令窗口
+  cmd
+2.进入某个文件夹 
+  cd xxx
+3.清屏
+  clear
+4.显示文件及文件夹 
+  dir
+5.创建文件夹
+  mkdir
+6.创建文件
+  type nul>文件名.后缀名来创建 
+  type null>c.txt
+7.删除文件夹
+  rd d:\wo 
+  当然这种删除方法必须要该文件夹是空文件夹，不然删除不了
+8.删除文件
+  del 盘符名:\文件名
+  del f:\123.txt
